@@ -32,21 +32,26 @@ import java.util.ArrayList
 
 import android.Manifest.permission.READ_CONTACTS
 import android.util.Log
-import okhttp3.FormBody
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody
+import co.paralleluniverse.fibers.Suspendable
+import co.paralleluniverse.kotlin.KotlinPackage
+import okhttp3.*
 
 public class OkHttpClientManager private constructor() {
-    init { println("This ($this) is a singleton") }
+    public var client: OkHttpClient;
 
-    private object Holder { val INSTANCE = OkHttpClientManager() }
+    init {
+        client = OkHttpClient()
+    }
+
+    private object Holder {
+        val INSTANCE = OkHttpClientManager()
+    }
 
     companion object {
         val instance: OkHttpClientManager by lazy { Holder.INSTANCE }
     }
 
-    val b: OkHttpClient = OkHttpClient()
+
 }
 
 /**
@@ -148,8 +153,20 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
                 formBody = FormBody.Builder().add("b", username).add("p", password).add("r", "").build()
             }
 
+            val request: Request = Request.Builder()
+                    .url(LoginURL)
+                    .post(formBody)
+                    .build();
 
+
+            co.paralleluniverse.kotlin.KotlinPackage.fiber @Suspendable {
+                var response: Response = OkHttpClientManager.instance.client.newCall(request).execute();
+                if() {
+
+                }
+            }
         }
+
         /*if (mAuthTask != null) {
             return
         }

@@ -45,5 +45,7 @@ dependencies {
 	compile 'com.squareup.okio:okio:1.6.0'
 	compile 'com.squareup.okhttp3:okhttp:3.0.0-RC1'
 	compile 'org.jsoup:jsoup:1.8.3'
+	compile 'co.paralleluniverse:quasar-core:0.7.3'
+	compile 'co.paralleluniverse:quasar-kotlin:0.7.3'
 }
 
