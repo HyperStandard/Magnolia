@@ -32,9 +32,13 @@ import java.util.ArrayList
 
 import android.Manifest.permission.READ_CONTACTS
 import android.util.Log
-import co.paralleluniverse.fibers.Suspendable
-import co.paralleluniverse.kotlin.KotlinPackage.*
+import de.halfbit.tinybus.Bus
+import de.halfbit.tinybus.Subscribe
+import de.halfbit.tinybus.TinyBus
 import okhttp3.*
+import kotlin.concurrent.thread
+
+data class LoginEvent(var success: Boolean, var message: String = "default" )
 
 public class OkHttpClientManager private constructor() {
     public var client: OkHttpClient;
@@ -71,11 +75,16 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
     private var mProgressView: View? = null
     private var mLoginFormView: View? = null
 
+    private var mBus: Bus? = null;
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
         // Set up the login form.
         mEmailView = findViewById(R.id.email) as AutoCompleteTextView
+
+        mBus = TinyBus.from(this);
+
         populateAutoComplete()
 
         mPasswordView = findViewById(R.id.password) as EditText
@@ -92,6 +101,16 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
 
         mLoginFormView = findViewById(R.id.login_form)
         mProgressView = findViewById(R.id.login_progress)
+    }
+
+    override fun onStart() {
+        super.onStart();
+        mBus?.register(this);
+    }
+
+    override fun onStop() {
+        mBus?.unregister(this);
+        super.onStop();
     }
 
     private fun populateAutoComplete() {
@@ -159,11 +178,27 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
                     .build();
 
 
-            fiber @Suspendable {
+            thread {
                 var response: Response = OkHttpClientManager.instance.client.newCall(request).execute();
-                if(true) {
-
+                Log.e(mTag, response.body().string())
+                if(response.body().string() == "<script>document.location.href=\"/\";</script>") {
+                    Log.e(mTag, "Good response")
+                    mBus?.post(LoginEvent(true, "hooray"))
+                    TinyBus.from(application).post(LoginEvent(true, "working"))
+                } else {
+                    Log.e(mTag, "Bad response")
+                    mBus?.post(LoginEvent(true, "hooray1"))
+                    TinyBus.from(application).post(LoginEvent(true, "working2"))
                 }
+            }
+        }
+
+        @Subscribe
+        fun onReceiveLoginEvent (message: LoginEvent ) {
+            Log.e(mTag, "got event from subscriber")
+            val (successful, text) = message
+            if( successful) {
+                Snackbar.make(mEmailView, "success ! ! !", Snackbar.LENGTH_LONG)
             }
         }
 
