@@ -193,14 +193,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
             }
         }
 
-        @Subscribe
-        fun onReceiveLoginEvent (message: LoginEvent ) {
-            Log.e(mTag, "got event from subscriber")
-            val (successful, text) = message
-            if( successful) {
-                Snackbar.make(mEmailView, "success ! ! !", Snackbar.LENGTH_LONG)
-            }
-        }
+
 
         /*if (mAuthTask != null) {
             return
@@ -246,6 +239,17 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
             mAuthTask = UserLoginTask(email, password)
             mAuthTask!!.execute(null as Void)
         }*/
+    }
+
+    @Subscribe
+    public fun onReceiveLoginEvent (message: LoginEvent ) {
+        Log.e(mTag, "got event from subscriber")
+
+        val (successful, text) = message
+        Log.e(mTag, "")
+        if( successful) {
+            Snackbar.make(mEmailView, "success ! ! !", Snackbar.LENGTH_LONG)
+        }
     }
 
     private fun isEmailValid(email: String): Boolean {
