@@ -143,11 +143,15 @@ class LoginActivity : AppCompatActivity() {
                 val test: String = response.body().string()
                 Log.e(mTag, test)
                 if ( test.contains("<script>document.location.href=\"/\";</script>")) {
-                    Log.e("<script>document.location.href=\"/\";</script>", test)
                     mBus?.post(LoginEvent(true, "logged in"))
                 } else {
-                    Log.e("<script>document.location.href=\"/\";</script>", test)
-                    mBus?.post(LoginEvent(false))
+                    if(test.contains("Invalid username or password."))
+                    {
+                        mBus?.post(LoginEvent(false, "wrong password"))
+                    } else {
+                        mBus?.post(LoginEvent(false))
+                    }
+
                 }
             }
         }
@@ -163,6 +167,8 @@ class LoginActivity : AppCompatActivity() {
             Log.e(mTag, "Success")
             val intent: Intent = Intent(applicationContext, MainActivity::class.java)
             startActivity(intent)
+        } else {
+            Snackbar.make(mEmailView, "Wrong password or user account", Snackbar.LENGTH_INDEFINITE).setAction("OK", View.OnClickListener { /* */ }).show()
         }
     }
 
