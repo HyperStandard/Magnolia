@@ -33,7 +33,7 @@ import java.util.ArrayList
 import android.Manifest.permission.READ_CONTACTS
 import android.util.Log
 import co.paralleluniverse.fibers.Suspendable
-import co.paralleluniverse.kotlin.KotlinPackage
+import co.paralleluniverse.kotlin.KotlinPackage.*
 import okhttp3.*
 
 public class OkHttpClientManager private constructor() {
@@ -159,9 +159,9 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
                     .build();
 
 
-            co.paralleluniverse.kotlin.KotlinPackage.fiber @Suspendable {
+            fiber @Suspendable {
                 var response: Response = OkHttpClientManager.instance.client.newCall(request).execute();
-                if() {
+                if(true) {
 
                 }
             }
