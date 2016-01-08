@@ -38,7 +38,7 @@ import de.halfbit.tinybus.TinyBus
 import okhttp3.*
 import kotlin.concurrent.thread
 
-data class LoginEvent(var success: Boolean, var message: String = "default" )
+data class LoginEvent(var success: Boolean, var message: String = "default")
 
 public class OkHttpClientManager private constructor() {
     public var client: OkHttpClient;
@@ -178,17 +178,17 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
                     .build();
 
 
+            showProgress(true)
             thread {
                 var response: Response = OkHttpClientManager.instance.client.newCall(request).execute();
-                Log.e(mTag, response.body().string())
-                if(response.body().string() == "<script>document.location.href=\"/\";</script>") {
-                    Log.e(mTag, "Good response")
-                    mBus?.post(LoginEvent(true, "hooray"))
-                    TinyBus.from(application).post(LoginEvent(true, "working"))
+                val test: String = response.body().string()
+                Log.e(mTag, test)
+                if ( test.contains("<script>document.location.href=\"/\";</script>")) {
+                    Log.e("<script>document.location.href=\"/\";</script>", test)
+                    mBus?.post(LoginEvent(true, "logged in"))
                 } else {
-                    Log.e(mTag, "Bad response")
-                    mBus?.post(LoginEvent(true, "hooray1"))
-                    TinyBus.from(application).post(LoginEvent(true, "working2"))
+                    Log.e("<script>document.location.href=\"/\";</script>", test)
+                    mBus?.post(LoginEvent(false))
                 }
             }
         }
@@ -242,12 +242,12 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
     }
 
     @Subscribe
-    public fun onReceiveLoginEvent (message: LoginEvent ) {
+    public fun onReceiveLoginEvent(message: LoginEvent) {
+        showProgress(false)
         Log.e(mTag, "got event from subscriber")
-
         val (successful, text) = message
-        Log.e(mTag, "")
-        if( successful) {
+        if ( successful) {
+            Log.e(mTag, "Success")
             Snackbar.make(mEmailView, "success ! ! !", Snackbar.LENGTH_LONG)
         }
     }
