@@ -1,5 +1,6 @@
 package rose.blossom.magnolia
 
+import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.FloatingActionButton
 import android.support.design.widget.Snackbar
@@ -57,7 +58,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            return true
+            val intent: Intent = Intent(getApplicationContext(), SettingsActivity::class.java)
+            startActivity(intent)
         }
 
         return super.onOptionsItemSelected(item)

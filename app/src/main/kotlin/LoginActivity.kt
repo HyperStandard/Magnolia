@@ -29,7 +29,7 @@ public class OkHttpClientManager private constructor() {
     public var client: OkHttpClient;
 
     init {
-        client = OkHttpClient()
+        client = OkHttpClient.Builder().cookieJar(PersistentCookieJar.instance).build()
     }
 
     private object Holder {
@@ -164,7 +164,6 @@ class LoginActivity : AppCompatActivity() {
         Log.e(mTag, "got event from subscriber")
         val (successful, text) = message
         if ( successful) {
-            Log.e(mTag, "Success")
             val intent: Intent = Intent(applicationContext, MainActivity::class.java)
             startActivity(intent)
         } else {
