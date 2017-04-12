@@ -180,11 +180,17 @@ class LoginActivity : AppCompatActivity() {
                 //var response2: Response = OKHttpClientManager.client.newCall(request).execute()
                 val test: String = response.body().string()
                 //val test2: String = response2.body().string()
+                //response.
                 var h = response.headers()
-                for (n in h.names()){
-                    Log.e(n, h.values(n).toString())
-                    h.get("Set-Cookie")
+
+                /*for (n in h.names()){
+                    Log.e(n, h.values(n).toString())*/
+                    //h.get("Set-Cookie").
+                ///*}/**/
+                for (c in h.get("Set-Cookie")) {
+                    Log.e("item:", c.toString())
                 }
+                 /**/
                 //get user ID from response cookie
                 //todo: int parsing here
                 var s = h.values("Set-Cookie").toString()
@@ -209,7 +215,6 @@ class LoginActivity : AppCompatActivity() {
                 }
             }
         }
-
     }
 
     @Subscribe
@@ -219,7 +224,9 @@ class LoginActivity : AppCompatActivity() {
         val (successful, text) = message
         if (successful) {
             val intent: Intent = Intent(applicationContext, MainActivity::class.java)
-            //intent.extras.putInt();
+                    //intent.
+            intent.putExtra("userID", message.userID)
+            //intent.extras.putInt("userID", message.userID);
             startActivity(intent)
         } else {
             Snackbar.make(mEmailView as View, "Wrong password or user account", Snackbar.LENGTH_INDEFINITE).setAction("OK", View.OnClickListener { /* */ }).show()
