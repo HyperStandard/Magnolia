@@ -27,7 +27,7 @@ import de.halfbit.tinybus.TinyBus
 import okhttp3.*
 import kotlin.concurrent.thread
 
-data class LoginEvent(var success: Boolean, var message: String = "default")
+data class LoginEvent(var success: Boolean, var message: String = "default", var userID: Int = -1)
 
 /*public class OkHttpClientManager private constructor() {
     var client: OkHttpClient = OkHttpClient.Builder().cookieJar(PersistentCookieJar.instance).build();
@@ -184,6 +184,10 @@ class LoginActivity : AppCompatActivity() {
                 for (n in h.names()){
                     Log.e(n, h.values(n).toString())
                 }
+                //get user ID from response cookie
+                //todo: int parsing here
+                var s = h.values("").toString()
+                var uid: Int = s[s.indexOf("userid=")+1].toInt()
                 Log.e(mTag, test)
                 //Log.e(mTag, test2)
                 //var cookies: List<Cookie> = net.cookieJar().loadForRequest(HttpUrl.parse("endoftheinter.net"))
@@ -193,7 +197,7 @@ class LoginActivity : AppCompatActivity() {
                     Log.e("cookie", cookie.value())
                 }*/
                 if (test.contains("<script>document.location.href=\"/\";</script>")) {
-                    mBus?.post(LoginEvent(true, "logged in"))
+                    mBus?.post(LoginEvent(true, "logged in", uid))
                 } else {
                     if (test.contains("Invalid username or password.")) {
                         mBus?.post(LoginEvent(false, "wrong password"))
@@ -214,6 +218,7 @@ class LoginActivity : AppCompatActivity() {
         val (successful, text) = message
         if (successful) {
             val intent: Intent = Intent(applicationContext, MainActivity::class.java)
+            //intent.extras.putInt();
             startActivity(intent)
         } else {
             Snackbar.make(mEmailView as View, "Wrong password or user account", Snackbar.LENGTH_INDEFINITE).setAction("OK", View.OnClickListener { /* */ }).show()
