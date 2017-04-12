@@ -17,6 +17,10 @@ import android.widget.AutoCompleteTextView
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import com.franmontiel.persistentcookiejar.ClearableCookieJar
+import com.franmontiel.persistentcookiejar.PersistentCookieJar
+import com.franmontiel.persistentcookiejar.cache.SetCookieCache
+import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersistor
 import de.halfbit.tinybus.Bus
 import de.halfbit.tinybus.Subscribe
 import de.halfbit.tinybus.TinyBus
@@ -25,12 +29,8 @@ import kotlin.concurrent.thread
 
 data class LoginEvent(var success: Boolean, var message: String = "default")
 
-public class OkHttpClientManager private constructor() {
-    public var client: OkHttpClient;
-
-    init {
-        client = OkHttpClient.Builder().cookieJar(PersistentCookieJar.instance).build()
-    }
+/*public class OkHttpClientManager private constructor() {
+    var client: OkHttpClient = OkHttpClient.Builder().cookieJar(PersistentCookieJar.instance).build();
 
     private object Holder {
         val INSTANCE = OkHttpClientManager()
@@ -41,6 +41,23 @@ public class OkHttpClientManager private constructor() {
     }
 
 
+}*/
+
+class OkHttpClientManager private constructor() {
+    init {
+        println("This ($this) is a singleton")
+    }
+
+    private object Holder {
+        val INSTANCE = OkHttpClientManager()
+    }
+
+    companion object {
+        val instance: OkHttpClientManager by lazy { Holder.INSTANCE }
+    }
+
+    var b: String = "hallo"
+    var client: OkHttpClient? = null// = OkHttpClient.Builder().cookieJar(PersistentCookieJar.instance).build();
 }
 
 /**
@@ -52,6 +69,7 @@ class LoginActivity : AppCompatActivity() {
      */
     private val mTag: String = "Magnolia${'$'}Login"
 
+    //getApp
     // UI references.
     private var mEmailView: AutoCompleteTextView? = null
     private var mPasswordView: EditText? = null
@@ -62,9 +80,19 @@ class LoginActivity : AppCompatActivity() {
 
     private var mBus: Bus? = null;
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
+
+        if (OkHttpClientManager.instance.client == null) {
+            val cookieJar: ClearableCookieJar = PersistentCookieJar(SetCookieCache(), SharedPrefsCookiePersistor(applicationContext))
+            OkHttpClientManager.instance.client = OkHttpClient.Builder().cookieJar(cookieJar).build()
+        }
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
+
+        Log.e("test:", OkHttpClientManager.instance.b)
+        //OkHttpClientManager.instance.client.c
 
         // Set up the login form.
         mEmailView = findViewById(R.id.email) as AutoCompleteTextView
@@ -117,8 +145,8 @@ class LoginActivity : AppCompatActivity() {
         val username: String = mEmailView?.text.toString()
         val formBody: RequestBody
 
-        if ( username == "" || password == "") {
-            Snackbar.make(mEmailView, R.string.error_field_required, Snackbar.LENGTH_SHORT)
+        if (username == "" || password == "") {
+            Snackbar.make(mEmailView as View, R.string.error_field_required, Snackbar.LENGTH_SHORT)
         } else {
             var LoginURL: String;
             if (true) {
@@ -139,14 +167,35 @@ class LoginActivity : AppCompatActivity() {
 
             showProgress(true)
             thread {
-                var response: Response = OkHttpClientManager.instance.client.newCall(request).execute();
+                //val cli = OkHttpClient.Builder().cookieJar(PersistentCookieJar.instance).build();
+                /*i/f (OkHttpClientManager.instance.client == null) {
+                    val cookieJar: ClearableCookieJar = PersistentCookieJar(SetCookieCache(), SharedPrefsCookiePersistor(applicationContext))
+                    OkHttpClient.Builder().cookieJar(cookieJar).build()
+                }*/
+                val net = OkHttpClientManager.instance.client
+                var response: Response
+                response = net!!.newCall(request).execute();
+                //response.header()
+                //net.cookieJar().saveFromResponse()
+                //var response2: Response = OKHttpClientManager.client.newCall(request).execute()
                 val test: String = response.body().string()
+                //val test2: String = response2.body().string()
+                var h = response.headers()
+                for (n in h.names()){
+                    Log.e(n, h.values(n).toString())
+                }
                 Log.e(mTag, test)
-                if ( test.contains("<script>document.location.href=\"/\";</script>")) {
+                //Log.e(mTag, test2)
+                //var cookies: List<Cookie> = net.cookieJar().loadForRequest(HttpUrl.parse("endoftheinter.net"))
+                //net.cookieJar().
+                //var test2 = net.cookieJar().
+                /*for (cookie in cookies) {
+                    Log.e("cookie", cookie.value())
+                }*/
+                if (test.contains("<script>document.location.href=\"/\";</script>")) {
                     mBus?.post(LoginEvent(true, "logged in"))
                 } else {
-                    if(test.contains("Invalid username or password."))
-                    {
+                    if (test.contains("Invalid username or password.")) {
                         mBus?.post(LoginEvent(false, "wrong password"))
                     } else {
                         mBus?.post(LoginEvent(false))
@@ -163,11 +212,11 @@ class LoginActivity : AppCompatActivity() {
         showProgress(false)
         Log.e(mTag, "got event from subscriber")
         val (successful, text) = message
-        if ( successful) {
+        if (successful) {
             val intent: Intent = Intent(applicationContext, MainActivity::class.java)
             startActivity(intent)
         } else {
-            Snackbar.make(mEmailView, "Wrong password or user account", Snackbar.LENGTH_INDEFINITE).setAction("OK", View.OnClickListener { /* */ }).show()
+            Snackbar.make(mEmailView as View, "Wrong password or user account", Snackbar.LENGTH_INDEFINITE).setAction("OK", View.OnClickListener { /* */ }).show()
         }
     }
 
