@@ -183,12 +183,13 @@ class LoginActivity : AppCompatActivity() {
                 var h = response.headers()
                 for (n in h.names()){
                     Log.e(n, h.values(n).toString())
+                    h.get("Set-Cookie")
                 }
                 //get user ID from response cookie
                 //todo: int parsing here
-                var s = h.values("").toString()
-                var uid: Int = s[s.indexOf("userid=")+1].toInt()
-                Log.e(mTag, test)
+                var s = h.values("Set-Cookie").toString()
+                //var uid: Int = s.substring(s.indexOf("userid=") + 1, s.indexOf(';')).toInt()//s[s.indexOf("userid=")+1].toInt()
+                Log.e(mTag, s)//uid.toString())
                 //Log.e(mTag, test2)
                 //var cookies: List<Cookie> = net.cookieJar().loadForRequest(HttpUrl.parse("endoftheinter.net"))
                 //net.cookieJar().
@@ -197,7 +198,7 @@ class LoginActivity : AppCompatActivity() {
                     Log.e("cookie", cookie.value())
                 }*/
                 if (test.contains("<script>document.location.href=\"/\";</script>")) {
-                    mBus?.post(LoginEvent(true, "logged in", uid))
+                    mBus?.post(LoginEvent(true, "logged in", 1))
                 } else {
                     if (test.contains("Invalid username or password.")) {
                         mBus?.post(LoginEvent(false, "wrong password"))
